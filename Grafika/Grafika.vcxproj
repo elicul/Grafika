@@ -193,7 +193,7 @@
     <ClCompile Include="Box2D\Dynamics\Joints\b2WeldJoint.cpp" />
     <ClCompile Include="Box2D\Dynamics\Joints\b2WheelJoint.cpp" />
     <ClCompile Include="Box2D\Rope\b2Rope.cpp" />
-    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Box2D\Box2D.h" />
@@ -418,6 +418,7 @@
     <ClInclude Include="include\opencv\cxmisc.h" />
     <ClInclude Include="include\opencv\highgui.h" />
     <ClInclude Include="include\opencv\ml.h" />
+    <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\Box2D.pdb">
