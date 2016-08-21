@@ -7,8 +7,11 @@ cv::RNG rng(12345);
 cv::vector<cv::vector<cv::Point>> contours;
 cv::vector<cv::Vec4i> hierarchy;
 
-b2Vec2 gravity(0.0f, 9.81f);
-b2World world(gravity);
+b2Vec2 gravity(0, 9.81);
+b2World* world = new b2World(gravity);
+b2Body* floorBody;
+b2Body* leftBody;
+b2Body* rightBody;
 
 float pixel = 20;
 float space = 50;
@@ -20,7 +23,7 @@ ball::ball()
 	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.Set(space / pixel, 50.0f / pixel);
 	space += 10;
-	body = world.CreateBody(&bodyDef);
+	body = world->CreateBody(&bodyDef);
 	b2CircleShape dynamicBox;
 	dynamicBox.m_radius = 20.0f / pixel;
 	b2FixtureDef fixtureDef;
@@ -86,34 +89,41 @@ int main(int argc, const char** argv)
 			chain.CreateLoop(vs, t);
 
 			b2BodyDef bd;
-			bodyy = world.CreateBody(&bd);
+			bodyy = world->CreateBody(&bd);
 			bodyy->CreateFixture(&chain, 0.0f);
 
 			delete vs;
 		}
 
-		world.Step(timeStep, velocityIterations, positionIterations);
+		world->Step(timeStep, velocityIterations, positionIterations);
 
 		for (size_t i = 0; i<10; i++)
 		{
 			b2Vec2 position = Balls[i].body->GetPosition();
-			circle(image, cv::Point(position.x * pixel, position.y * pixel), 20, CV_RGB(0, 255, 0), 3, 8, 0);
+			circle(image, cv::Point(position.x * pixel, position.y * pixel), 20, CV_RGB(0, 255, 0), -1, 8, 0);
 		}
 
 		if (num != -1)
 		{
-			world.DestroyBody(bodyy);
+			world->DestroyBody(bodyy);
 		}
 
 		imshow("Capture ", image);
 	}
+	for (size_t i=0; i<ball_num; i++)
+	{
+		world->DestroyBody(Balls[i].body);
+	}
+	world->DestroyBody(floorBody);
+	world->DestroyBody(leftBody);
+	world->DestroyBody(rightBody);
+	
+	delete world;
 	cam_stop(capture);
 	return 0;
 }
-
 void init()
 {
-	b2Body* floorBody;
 	b2BodyDef floorDef;
 	b2FixtureDef floorFixtureDef;
 	b2PolygonShape floorBox;
@@ -125,21 +135,18 @@ void init()
 	floorFixtureDef.friction = 0.3f;
 
 	floorDef.position.Set(640.0f / 2.0f / pixel, 480.0f / pixel);
-	floorBody = world.CreateBody(&floorDef);
+	floorBody = world->CreateBody(&floorDef);
 	floorBody->CreateFixture(&floorFixtureDef);
 
-	b2Body* leftBody;
 	floorBox.SetAsBox(0.0f, 480.0f / 2.0f / pixel);
 	floorDef.position.Set(0 / pixel, 480.0f / 2.0f / pixel);
-	leftBody = world.CreateBody(&floorDef);
+	leftBody = world->CreateBody(&floorDef);
 	leftBody->CreateFixture(&floorFixtureDef);
 
-	b2Body* rightBody;
 	floorDef.position.Set(640.0f / pixel, 480.0f / 2.0f / pixel);
-	rightBody = world.CreateBody(&floorDef);
+	rightBody = world->CreateBody(&floorDef);
 	rightBody->CreateFixture(&floorFixtureDef);
 }
-
 void cam_setup(cv::VideoCapture capture)
 {
 	if (!capture.isOpened()) {
@@ -147,11 +154,11 @@ void cam_setup(cv::VideoCapture capture)
 	}
 
 	capture.set(CV_CAP_PROP_FPS, 30);
-	capture.set(CV_CAP_PROP_EXPOSURE, -2);
-	capture.set(CV_CAP_PROP_BRIGHTNESS, 0);
-	capture.set(CV_CAP_PROP_CONTRAST, 35);
-	capture.set(CV_CAP_PROP_SATURATION, 60);
-	capture.set(CV_CAP_PROP_GAIN, 64);
+	//capture.set(CV_CAP_PROP_EXPOSURE, -2);
+	//capture.set(CV_CAP_PROP_BRIGHTNESS, 0);
+	//capture.set(CV_CAP_PROP_CONTRAST, 35);
+	//capture.set(CV_CAP_PROP_SATURATION, 60);
+	//capture.set(CV_CAP_PROP_GAIN, 64);
 
 	cv::namedWindow("Foreground ", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("Capture ", CV_WINDOW_AUTOSIZE);
